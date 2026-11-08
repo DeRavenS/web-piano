@@ -928,6 +928,17 @@
     }
   }
 
+  // Leaving the page or backgrounding the Android app: stop the exercise,
+  // release the microphone and pause audio.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) return;
+    if (run) stopRun(true);
+    if (rf) endRangeFinder(false);
+    stopDrone();
+    if (AudioEngine.mic) toggleMic();
+    AudioEngine.suspend();
+  });
+
   // =========================================================================
   // Init
   // =========================================================================

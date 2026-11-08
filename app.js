@@ -178,7 +178,8 @@ function renderPiano() {
 function applyKeySizing() {
   const DEFAULT_WHITE = 56, DEFAULT_BLACK = 36;
   const whiteCount = notes.filter((n) => !n.isBlack).length || 1;
-  const available = Math.min(window.innerWidth - 60, 1280);
+  // Leave room for the page gutters + piano frame (smaller on phones).
+  const available = Math.min(window.innerWidth - (window.innerWidth <= 600 ? 44 : 60), 1280);
   const fitWidth = available / whiteCount;
   const whiteW = Math.max(22, Math.min(DEFAULT_WHITE, fitWidth));
   const scale = whiteW / DEFAULT_WHITE;

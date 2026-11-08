@@ -42,6 +42,11 @@ const AudioEngine = (() => {
     if (ctx.state === "suspended") await ctx.resume();
   }
 
+  // Silence everything (e.g. app sent to the background); the next resume() restarts it.
+  async function suspend() {
+    if (ctx && ctx.state === "running") await ctx.suspend();
+  }
+
   function now() { return context().currentTime; }
 
   function setVolume(frac) {
@@ -378,7 +383,7 @@ const AudioEngine = (() => {
   }
 
   return {
-    INSTRUMENTS, context, resume, now, setVolume, load, play, click,
+    INSTRUMENTS, context, resume, suspend, now, setVolume, load, play, click,
     openMic, closeMic, get mic() { return mic; }, midiToFreq,
   };
 })();

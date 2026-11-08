@@ -260,3 +260,34 @@ input[type="number"] { width: 90px; }
   .ex-list { max-height: 240px; }
   #pitchCanvas { height: 280px; }
 }
+
+/* ---- Touch + phone layout ---- */
+.piano { touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; }
+button, select, .tab { touch-action: manipulation; }
+
+@media (max-width: 600px) {
+  body { padding: 14px 12px 32px; }
+  header h1 { font-size: 1.5rem; }
+  .subtitle { font-size: 0.85rem; }
+  .tab { padding: 7px 12px; font-size: 0.88rem; }
+  .controls { padding: 12px; gap: 10px 12px; justify-content: flex-start; }
+  .control.toggles, .control.buttons { flex-wrap: wrap; }
+  .readouts { gap: 8px; }
+  .readout { padding: 8px 10px; }
+  .big-note { font-size: 1.5rem; }
+  #pitchCanvas { height: 240px; }
+  .piano { --white-key-h: 170px; --black-key-h: 105px; padding: 8px; }
+  .ex-detail .settings-grid > label { flex: 1 1 140px; }
+  .ex-detail select, .ex-detail input { width: 100%; }
+  .panel, .voice-settings { padding: 10px 12px; }
+}
+
+/* Narrow keys: keep only white-key note names. */
+@media (max-width: 600px) {
+  .key.black .note-label { display: none; }
+  .key .note-label { font-size: 0.6rem; }
+}
+/* Touchscreens have no computer keyboard to map. */
+@media (hover: none) and (pointer: coarse) {
+  .key .key-label, #remapBtn, #resetBtn, label:has(#showKeys) { display: none; }
+}
