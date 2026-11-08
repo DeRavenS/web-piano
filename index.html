@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Web Piano</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎹 Web Piano</h1>
+    <p class="subtitle">Play piano, guitar or voice sounds — then sing along and see your pitch.</p>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Mode">
+    <button type="button" role="tab" data-tab="piano" class="tab">🎹 Piano</button>
+    <button type="button" role="tab" data-tab="free" class="tab">🎤 Free play</button>
+    <button type="button" role="tab" data-tab="exercises" class="tab">🏋️ Vocal exercises</button>
+  </nav>
+
+  <section class="controls" aria-label="Controls">
+    <div class="control">
+      <label for="engine">Sound</label>
+      <select id="engine"></select>
+      <span id="sampleStatus" class="status" hidden></span>
+    </div>
+
+    <div class="control">
+      <label for="octaves">Octaves</label>
+      <select id="octaves">
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+      </select>
+    </div>
+
+    <div class="control">
+      <label class="checkbox"><input type="checkbox" id="fullPiano" /> Full 88-key piano (A0–C8)</label>
+    </div>
+
+    <div class="control">
+      <label for="startOctave">Start at</label>
+      <select id="startOctave">
+        <option value="0">C0</option>
+        <option value="1">C1</option>
+        <option value="2">C2</option>
+        <option value="3" selected>C3</option>
+        <option value="4">C4</option>
+        <option value="5">C5</option>
+        <option value="6">C6</option>
+      </select>
+    </div>
+
+    <div class="control">
+      <label for="volume">Volume</label>
+      <input type="range" id="volume" min="0" max="100" value="70" />
+    </div>
+
+    <div class="control toggles">
+      <label class="checkbox"><input type="checkbox" id="showNotes" checked /> Note names</label>
+      <label class="checkbox"><input type="checkbox" id="showKeys" checked /> Key labels</label>
+    </div>
+
+    <div class="control buttons">
+      <button id="remapBtn" type="button">Remap keys</button>
+      <button id="resetBtn" type="button" class="secondary">Reset mapping</button>
+    </div>
+
+    <div class="control buttons">
+      <button id="micBtn" type="button" class="mic-btn">🎤 Turn on mic</button>
+      <div class="mic-level" title="Microphone level"><div id="micLevel"></div></div>
+    </div>
+  </section>
+
+  <p id="remapHint" class="remap-hint" hidden></p>
+
+  <!-- ===== Pitch trainer (Free play + Vocal exercises) ===== -->
+  <section id="trainer" class="trainer" hidden>
+    <div class="readouts">
+      <div class="readout">
+        <div class="readout-label">You</div>
+        <div id="sungNote" class="big-note">—</div>
+        <div id="sungDetail" class="readout-detail">turn on the mic and sing</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">Target</div>
+        <div id="targetNote" class="big-note">—</div>
+        <div id="targetDetail" class="readout-detail">&nbsp;</div>
+      </div>
+      <div class="readout meter-wrap">
+        <div class="readout-label">Tuning</div>
+        <div class="cents-meter" aria-label="Tuning meter">
+          <div class="cents-zone"></div>
+          <div class="cents-center"></div>
+          <div id="centsNeedle" class="cents-needle" hidden></div>
+        </div>
+        <div class="cents-scale"><span>flat</span><span>in tune</span><span>sharp</span></div>
+        <div id="centsText" class="readout-detail">&nbsp;</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label" id="scoreLabel">Accuracy</div>
+        <div id="scoreBig" class="big-note">—</div>
+        <div id="scoreDetail" class="readout-detail">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <canvas id="pitchCanvas" aria-label="Pitch graph: target notes and your voice over time"></canvas>
+      <div id="countdown" class="countdown" hidden></div>
+    </div>
+
+    <details class="voice-settings" id="voiceSettings">
+      <summary>Voice settings</summary>
+      <div class="settings-grid">
+        <label>Voice type
+          <select id="rangePreset">
+            <option value="bass">Bass (E2–E4)</option>
+            <option value="baritone">Baritone (G2–G4)</option>
+            <option value="tenor">Tenor (C3–C5)</option>
+            <option value="alto">Alto (F3–F5)</option>
+            <option value="mezzo">Mezzo-soprano (A3–A5)</option>
+            <option value="soprano">Soprano (C4–C6)</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label>Lowest note <select id="rangeLo"></select></label>
+        <label>Highest note <select id="rangeHi"></select></label>
+        <label>Accuracy needed
+          <select id="tolerance">
+            <option value="15">Strict (±15¢)</option>
+            <option value="25">Hard (±25¢)</option>
+            <option value="40">Medium (±40¢)</option>
+            <option value="60">Easy (±60¢)</option>
+          </select>
+        </label>
+        <label class="checkbox"><input type="checkbox" id="ignoreOctave" /> Any octave counts</label>
+        <label>Mic sensitivity
+          <input type="range" id="sensitivity" min="0" max="100" value="60" />
+        </label>
+      </div>
+      <p class="settings-note">🎧 Use headphones — otherwise the mic hears the reference notes as well as you.</p>
+    </details>
+
+    <!-- Free play -->
+    <div id="freePanel" class="panel">
+      <p class="panel-hint">Play any key (mouse or keyboard) to set a target, then sing it. Green means you're within the accuracy setting.</p>
+      <div class="panel-row">
+        <button id="randomNoteBtn" type="button">🎲 Random note</button>
+        <button id="replayBtn" type="button" class="secondary">🔁 Replay target</button>
+        <button id="clearTargetBtn" type="button" class="secondary">Clear target</button>
+        <label class="checkbox"><input type="checkbox" id="droneCb" /> Drone: keep the target sounding</label>
+        <label>Drone sound
+          <select id="droneSound">
+            <option value="voiceOoh">Voice "Ooh"</option>
+            <option value="voiceHum">Voice hum</option>
+            <option value="pianoSynth">Synth tone</option>
+            <option value="choir">Choir</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <!-- Vocal exercises -->
+    <div id="exPanel" class="panel ex-panel">
+      <aside class="ex-list-wrap">
+        <input id="exSearch" type="search" placeholder="Search exercises…" aria-label="Search exercises" />
+        <div id="exList" class="ex-list"></div>
+      </aside>
+      <div class="ex-detail">
+        <div class="ex-cat" id="exCat"></div>
+        <h2 id="exName"></h2>
+        <p id="exDesc"></p>
+        <p id="exHint" class="ex-hint" hidden></p>
+
+        <div id="exOptions" class="settings-grid">
+          <label>Tempo (BPM) <input type="number" id="exTempo" min="40" max="220" step="5" /></label>
+          <label>Guide
+            <select id="exMode">
+              <option value="along">Play along (hear it while you sing)</option>
+              <option value="listen">Hear it, then sing it</option>
+              <option value="cue">Starting note only</option>
+            </select>
+          </label>
+          <label>Repetitions
+            <select id="exReps">
+              <option value="1">1</option>
+              <option value="3">3</option>
+              <option value="5">5</option>
+              <option value="8" selected>8</option>
+              <option value="12">12</option>
+              <option value="99">Whole range</option>
+            </select>
+          </label>
+          <label>Each repeat moves
+            <select id="exDirection">
+              <option value="up">Up a half step</option>
+              <option value="down">Down a half step</option>
+              <option value="updown">Up, then back down</option>
+              <option value="same">Stay in one key</option>
+            </select>
+          </label>
+          <label>Start on <select id="exStart"></select></label>
+        </div>
+
+        <div id="rangeFinder" class="range-finder" hidden>
+          <ol>
+            <li>Sing a comfortable note, then slide <b>down</b> as low as you can and hold the bottom note for a moment.</li>
+            <li>Press <b>Next</b>, then slide <b>up</b> as high as you comfortably can and hold.</li>
+            <li>Press <b>Save range</b> — every exercise is then placed inside it.</li>
+          </ol>
+          <div class="rf-results">
+            <div>Lowest held: <b id="rfLow">—</b></div>
+            <div>Highest held: <b id="rfHigh">—</b></div>
+          </div>
+        </div>
+
+        <div class="panel-row">
+          <button id="exStartBtn" type="button">▶ Start</button>
+          <button id="exStopBtn" type="button" class="secondary" hidden>■ Stop</button>
+          <button id="rfNextBtn" type="button" class="secondary" hidden>Next: highest note</button>
+          <span id="exStatus" class="status"></span>
+        </div>
+
+        <div id="exResults" class="ex-results" hidden></div>
+      </div>
+    </div>
+  </section>
+
+  <main>
+    <div id="piano" class="piano" role="group" aria-label="Piano keyboard"></div>
+  </main>
+
+  <footer>
+    <p>Tip: run <em>start-piano.bat</em> so the piano and guitar samples (and the microphone) work.</p>
+  </footer>
+
+  <script src="audio.js"></script>
+  <script src="pitch.js"></script>
+  <script src="exercises.js"></script>
+  <script src="app.js"></script>
+  <script src="trainer.js"></script>
+</body>
+</html>
