@@ -16,6 +16,7 @@
     <button type="button" role="tab" data-tab="piano" class="tab">🎹 Piano</button>
     <button type="button" role="tab" data-tab="free" class="tab">🎤 Free play</button>
     <button type="button" role="tab" data-tab="exercises" class="tab">🏋️ Vocal exercises</button>
+    <button type="button" role="tab" data-tab="intervals" class="tab">👂 Intervals</button>
   </nav>
 
   <section class="controls" aria-label="Controls">
@@ -230,6 +231,80 @@
     </div>
   </section>
 
+  <!-- ===== Interval ear training ===== -->
+  <section id="intervalTrainer" class="trainer intervals" hidden>
+    <div class="readouts iv-readouts">
+      <div class="readout">
+        <div class="readout-label">Progress</div>
+        <div id="ivProgress" class="big-note">—</div>
+        <div id="ivProgressDetail" class="readout-detail">&nbsp;</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">Score</div>
+        <div id="ivScore" class="big-note">—</div>
+        <div id="ivScoreDetail" class="readout-detail">&nbsp;</div>
+      </div>
+      <div class="readout">
+        <div class="readout-label">Streak</div>
+        <div id="ivStreak" class="big-note">—</div>
+        <div id="ivStreakDetail" class="readout-detail">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-row iv-stage">
+        <button id="ivPlay" type="button" class="iv-play">▶ Start</button>
+        <button id="ivNext" type="button" class="secondary" disabled>Next ⏎</button>
+        <button id="ivEnd" type="button" class="secondary" hidden>End session</button>
+      </div>
+      <p id="ivPrompt" class="iv-prompt" aria-live="polite"></p>
+      <div id="ivChoices" class="iv-choices"></div>
+      <p class="settings-note">Keys: <b>Space</b> play / replay · <b>1–9, 0, -, =</b> answer · <b>Enter</b> next. Sound comes from the <i>Sound</i> picker above.</p>
+      <div id="ivResults" class="ex-results" hidden></div>
+    </div>
+
+    <details class="voice-settings" id="ivSettings">
+      <summary>Quiz settings</summary>
+      <div class="settings-grid">
+        <label>Intervals
+          <select id="ivPreset">
+            <option value="simple">Simple (M3, P5, octave)</option>
+            <option value="diatonic">Major-scale (M2, M3, P4, P5, M6, M7, P8)</option>
+            <option value="all">All, minor 2nd to octave</option>
+            <option value="custom">Custom</option>
+          </select>
+        </label>
+        <label>Played
+          <select id="ivDir">
+            <option value="asc">Ascending</option>
+            <option value="desc">Descending</option>
+            <option value="mixed">Up or down</option>
+            <option value="harm">Together (harmonic)</option>
+          </select>
+        </label>
+        <label>Speed
+          <select id="ivSpeed">
+            <option value="slow">Slow</option>
+            <option value="medium">Medium</option>
+            <option value="fast">Fast</option>
+          </select>
+        </label>
+        <label>Questions
+          <select id="ivCount">
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="50">50</option>
+            <option value="0">Endless</option>
+          </select>
+        </label>
+        <label class="checkbox"><input type="checkbox" id="ivFixed" /> Always start on C4</label>
+        <label class="checkbox"><input type="checkbox" id="ivAuto" /> Next question automatically</label>
+      </div>
+      <div id="ivChips" class="iv-chips" aria-label="Intervals to practise"></div>
+    </details>
+  </section>
+
   <main>
     <div id="piano" class="piano" role="group" aria-label="Piano keyboard"></div>
   </main>
@@ -242,6 +317,7 @@
   <script src="pitch.js"></script>
   <script src="exercises.js"></script>
   <script src="app.js"></script>
+  <script src="intervals.js"></script>
   <script src="trainer.js"></script>
 </body>
 </html>

@@ -396,6 +396,12 @@ const PianoUI = {
     if (midi === null || !notes.length) return;
     offsetToEl.get(Math.round(midi) - notes[0].midi)?.classList.add("target");
   },
+  // Mark the notes of an interval-quiz answer (empty array clears).
+  markNotes(midis) {
+    for (const el of pianoEl.querySelectorAll(".key.iv-mark")) el.classList.remove("iv-mark");
+    if (!notes.length) return;
+    for (const m of midis) offsetToEl.get(m - notes[0].midi)?.classList.add("iv-mark");
+  },
 };
 
 // ===========================================================================

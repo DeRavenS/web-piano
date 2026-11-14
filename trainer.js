@@ -87,9 +87,12 @@
     tab = t;
     save(TAB_KEY, t);
     for (const b of tabButtons) b.setAttribute("aria-selected", String(b.dataset.tab === t));
-    trainerEl.hidden = t === "piano";
+    const singing = t === "free" || t === "exercises";
+    trainerEl.hidden = !singing;
+    IntervalTrainer.setActive(t === "intervals");
     // Keep the keyboard right under the pitch graph while singing.
     if (t === "piano") trainerEl.after(pianoMain);
+    else if (t === "intervals") IntervalTrainer.el.after(pianoMain);
     else canvas.parentElement.after(pianoMain);
     freePanel.hidden = t !== "free";
     exPanel.hidden = t !== "exercises";
@@ -105,7 +108,7 @@
       setTab(b.dataset.tab);
       await AudioEngine.resume();
       // Entering a singing mode is a user gesture, so we can ask for the mic.
-      if (b.dataset.tab !== "piano" && !AudioEngine.mic) toggleMic();
+      if ((b.dataset.tab === "free" || b.dataset.tab === "exercises") && !AudioEngine.mic) toggleMic();
     });
   }
 

@@ -30,9 +30,16 @@ HTML, CSS, and JavaScript — no build step, no install.
   - *Sustain & control*: long tones, step-and-hold glides, semitone steps
   - *Ear training*: random note, random interval, echo random melodies (hear, then sing)
   - *Range finder*: measures your lowest/highest held notes and saves your range
-  - Options: tempo, guide mode (play along / hear then sing / starting note only),
+  - Options: tempo, guide mode (hear then sing — the default / play along / starting note only),
     repetitions, transposition direction, start note. Results show a star rating,
     per-rep scores, whether you tend sharp or flat, and your best score per exercise.
+- **👂 Intervals** — ear training: hear two notes and name the interval (minor 2nd to
+  octave). Choose a preset or any set of intervals; play them ascending, descending,
+  either, or together; slow/medium/fast; fixed C4 or random start; 10–50 questions or
+  endless. Wrong guesses can be retried, but only first-try answers score. ▶ buttons let
+  you hear any interval for comparison, the answer is marked on the keyboard, and the
+  results show per-interval accuracy (this session and all-time) with your weakest
+  intervals. Keyboard: Space play/replay, 1–9 / 0 / - / = answer, Enter next.
 - **Voice settings**: voice-type presets (bass → soprano) or custom range, accuracy
   tolerance (±15¢ to ±60¢), "any octave counts", mic sensitivity.
 - While the mic is on, the key you're singing lights up on the keyboard (green when in
@@ -96,3 +103,4 @@ So `A` = the first C, `W` = C#, `S` = D, and so on.
 | `exercises.js` | The vocal exercise library |
 | `app.js`     | Keyboard: note model, input handling, key mapping |
 | `trainer.js` | Free play, exercise runner/scoring, range finder, pitch graph |
+| `intervals.js` | Interval ear-training quiz |
