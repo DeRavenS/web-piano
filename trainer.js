@@ -30,8 +30,10 @@
   const settings = Object.assign({
     preset: "baritone", lo: 43, hi: 67, tol: 40, ignoreOctave: false, sensitivity: 60,
     drone: false, droneSound: "voiceOoh",
-    exId: "five-tone", mode: "along", reps: "8", direction: "up", tempos: {},
+    exId: "five-tone", mode: "listen", reps: "8", direction: "up", tempos: {},
   }, load(SETTINGS_KEY, {}));
+  // "Hear it, then sing it" became the default guide; move saved settings over once.
+  if (!settings.listenDefault) { settings.mode = "listen"; settings.listenDefault = true; }
   const best = load(BEST_KEY, {});
   const saveSettings = () => save(SETTINGS_KEY, settings);
 
@@ -131,6 +133,33 @@
   // Sensitivity slider 0..100 -> loudness gate (RMS) 0.05 .. 0.002, log scale.
   const minRms = () => 0.05 * Math.pow(0.04, settings.sensitivity / 100);
 
+  // A sudden jump to the 2nd–6th harmonic (octave, octave + fifth, ...) is
+  // usually the detector locking onto a harmonic for a moment (e.g. a choir's
+  // detuned voices briefly cancelling the fundamental), not a real leap. Hide
+  // such jumps until they've lasted 150 ms, unless they land closer to the
+  // target note (the singer leaping to it), which passes straight away.
+  // A fading note's upper harmonics outlast its fundamental (plucked strings,
+  // piano), so a jump in a tail below 20% of the phrase's peak is never followed.
+  let stablePitch = null, jumpSince = null, lastVoicedAt = -Infinity, phrasePeak = 0;
+  function guardHarmonicJump(m, now, tgt, rms) {
+    if (m === null) {
+      if (now - lastVoicedAt > 0.3) { stablePitch = null; phrasePeak = 0; } // new phrase: any octave is fine
+      jumpSince = null;
+      return null;
+    }
+    lastVoicedAt = now;
+    phrasePeak = Math.max(phrasePeak, rms);
+    const d = stablePitch === null ? 0 : Math.abs(m - stablePitch);
+    const towardTarget = tgt !== null && Math.abs(m - tgt) < Math.abs(stablePitch - tgt);
+    if (!towardTarget && [12, 19, 24, 28, 31].some((h) => Math.abs(d - h) < 0.7)) {
+      jumpSince ??= now;
+      if (now - jumpSince < 0.15 || rms < 0.2 * phrasePeak) return null;
+    }
+    stablePitch = m;
+    jumpSince = null;
+    return m;
+  }
+
   function samplePitch(now) {
     const mic = AudioEngine.mic;
     if (!mic) return null;
@@ -153,7 +182,9 @@
 
     // The analysis window is centred half a frame in the past.
     const t = now - mic.analyser.fftSize / sr / 2;
-    history.push({ t, m, tgt: scoredTargetAt(t), rms: lastRms });
+    const tgt = scoredTargetAt(t);
+    m = guardHarmonicJump(m, now, tgt, lastRms);
+    history.push({ t, m, tgt, rms: lastRms });
     while (history.length && history[0].t < now - 30) history.shift();
     return m;
   }
