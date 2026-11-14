@@ -34,7 +34,8 @@ HTML, CSS, and JavaScript — no build step, no install.
     repetitions, transposition direction, start note. Results show a star rating,
     per-rep scores, whether you tend sharp or flat, and your best score per exercise.
 - **👂 Intervals** — ear training: hear two notes and name the interval (minor 2nd to
-  octave). Choose a preset or any set of intervals; play them ascending, descending,
+  octave). Choose a preset (simple, major-scale, minor-scale, minor only, all) or any
+  set of intervals; play them ascending, descending,
   either, or together; slow/medium/fast; fixed C4 or random start; 10–50 questions or
   endless. Wrong guesses can be retried, but only first-try answers score. ▶ buttons let
   you hear any interval for comparison, the answer is marked on the keyboard, and the

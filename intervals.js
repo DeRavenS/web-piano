@@ -29,6 +29,8 @@ const IntervalTrainer = (() => {
   const PRESETS = {
     simple: [4, 7, 12],
     diatonic: [2, 4, 5, 7, 9, 11, 12],
+    minorScale: [2, 3, 5, 7, 8, 10, 12],
+    minor: [1, 3, 8, 10],
     all: INTERVALS.map((iv) => iv.s),
   };
   const NOTE_SECONDS = { slow: 1.1, medium: 0.75, fast: 0.45 };
