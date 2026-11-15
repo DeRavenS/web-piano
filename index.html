@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#1b1d23" />
   <title>Web Piano</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -19,14 +20,14 @@
     <button type="button" role="tab" data-tab="intervals" class="tab">👂 Intervals</button>
   </nav>
 
-  <section class="controls" aria-label="Controls">
+  <section id="controls" class="controls" aria-label="Controls">
     <div class="control">
       <label for="engine">Sound</label>
-      <select id="engine"></select>
+      <select id="engine" aria-label="Sound"></select>
       <span id="sampleStatus" class="status" hidden></span>
     </div>
 
-    <div class="control">
+    <div class="control ctl-more">
       <label for="octaves">Octaves</label>
       <select id="octaves">
         <option value="1">1</option>
@@ -39,11 +40,11 @@
       </select>
     </div>
 
-    <div class="control">
+    <div class="control ctl-more">
       <label class="checkbox"><input type="checkbox" id="fullPiano" /> Full 88-key piano (A0–C8)</label>
     </div>
 
-    <div class="control">
+    <div class="control ctl-more">
       <label for="startOctave">Start at</label>
       <select id="startOctave">
         <option value="0">C0</option>
@@ -56,17 +57,17 @@
       </select>
     </div>
 
-    <div class="control">
+    <div class="control ctl-more">
       <label for="volume">Volume</label>
       <input type="range" id="volume" min="0" max="100" value="70" />
     </div>
 
-    <div class="control toggles">
+    <div class="control toggles ctl-more">
       <label class="checkbox"><input type="checkbox" id="showNotes" checked /> Note names</label>
       <label class="checkbox"><input type="checkbox" id="showKeys" checked /> Key labels</label>
     </div>
 
-    <div class="control buttons">
+    <div class="control buttons ctl-more">
       <button id="remapBtn" type="button">Remap keys</button>
       <button id="resetBtn" type="button" class="secondary">Reset mapping</button>
     </div>
@@ -74,6 +75,7 @@
     <div class="control buttons">
       <button id="micBtn" type="button" class="mic-btn">🎤 Turn on mic</button>
       <div class="mic-level" title="Microphone level"><div id="micLevel"></div></div>
+      <button id="controlsToggle" type="button" class="secondary controls-toggle" aria-expanded="false" aria-controls="controls">⚙ More</button>
     </div>
   </section>
 
@@ -311,7 +313,7 @@
     <div id="piano" class="piano" role="group" aria-label="Piano keyboard"></div>
   </main>
 
-  <footer>
+  <footer class="desktop-tip">
     <p>Tip: on a computer, run <em>start-piano.bat</em> (or use the online version) so the samples and microphone work.</p>
   </footer>
 

@@ -7,6 +7,10 @@ HTML, CSS, and JavaScript — no build step, no install.
 
 - Realistic piano-key layout (white + overlaid black keys), 1–7 octaves or the full
   88-key range (A0–C8). Play with **mouse/touch** or **computer keyboard**; remappable keys.
+  On touchscreens you can play chords with several fingers and slide across keys.
+- **Phone-friendly layout**: keys size themselves to the screen (width and height), the
+  extra controls fold behind a ⚙ button, and landscape mode drops the header to make room
+  and puts the pitch graph and keyboard side by side.
 - **Swappable sounds**, each covering the whole 88-key range:
   - **Grand piano** — [Salamander Grand Piano](https://github.com/tambien/Piano) samples
   - **Acoustic guitar** and **Electric guitar** — samples from

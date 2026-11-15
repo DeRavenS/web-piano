@@ -175,11 +175,13 @@ function renderPiano() {
 
 // Shrink keys so the whole range tries to fit the viewport; never grow past the
 // default size, and stop shrinking past a readable minimum (then it scrolls).
+// Key heights are set in CSS (they follow the viewport height and the tab).
 function applyKeySizing() {
   const DEFAULT_WHITE = 56, DEFAULT_BLACK = 36;
   const whiteCount = notes.filter((n) => !n.isBlack).length || 1;
-  // Leave room for the page gutters + piano frame (smaller on phones).
-  const available = Math.min(window.innerWidth - (window.innerWidth <= 600 ? 44 : 60), 1280);
+  // Width of the keyboard's container minus the piano frame's padding.
+  const frame = parseFloat(getComputedStyle(pianoEl).paddingLeft) * 2 || 28;
+  const available = Math.min((pianoEl.parentElement.clientWidth || window.innerWidth) - frame, 1280);
   const fitWidth = available / whiteCount;
   const whiteW = Math.max(22, Math.min(DEFAULT_WHITE, fitWidth));
   const scale = whiteW / DEFAULT_WHITE;
@@ -244,22 +246,46 @@ function applyVolume() {
 // Input handling
 // ===========================================================================
 // --- Mouse / touch (pointer events) ---
+// Each finger (or the mouse) holds one key; sliding onto another key moves the
+// note there (glissando). Several fingers at once play chords.
+const pointerKeys = new Map(); // pointerId -> offset it is holding (or null)
+
+function keyOffsetAt(x, y) {
+  const el = document.elementFromPoint(x, y)?.closest(".key");
+  return el && pianoEl.contains(el) ? parseInt(el.dataset.offset, 10) : null;
+}
+
 pianoEl.addEventListener("pointerdown", (e) => {
   const el = e.target.closest(".key");
   if (!el) return;
   const offset = parseInt(el.dataset.offset, 10);
   if (remapMode) { selectRemapTarget(offset); return; }
-  el.setPointerCapture?.(e.pointerId);
+  e.preventDefault();
+  try { pianoEl.setPointerCapture(e.pointerId); } catch (_) { /* pointer already gone */ }
+  pointerKeys.set(e.pointerId, offset);
   playOffset(offset, "mouse");
+});
+
+pianoEl.addEventListener("pointermove", (e) => {
+  if (!pointerKeys.has(e.pointerId)) return;
+  const prev = pointerKeys.get(e.pointerId);
+  const offset = keyOffsetAt(e.clientX, e.clientY);
+  if (offset === prev) return;
+  pointerKeys.set(e.pointerId, offset);
+  if (prev !== null && ![...pointerKeys.values()].includes(prev)) releaseOffset(prev);
+  if (offset !== null) playOffset(offset, "mouse");
 });
 
 pianoEl.addEventListener("pointerup", endPointer);
 pianoEl.addEventListener("pointercancel", endPointer);
 function endPointer(e) {
-  const el = e.target.closest(".key");
-  if (!el) return;
-  releaseOffset(parseInt(el.dataset.offset, 10));
+  if (!pointerKeys.has(e.pointerId)) return;
+  const offset = pointerKeys.get(e.pointerId);
+  pointerKeys.delete(e.pointerId);
+  if (offset !== null && ![...pointerKeys.values()].includes(offset)) releaseOffset(offset);
 }
+// Long-pressing a key on a phone shouldn't open a menu or select text.
+pianoEl.addEventListener("contextmenu", (e) => e.preventDefault());
 
 // --- Computer keyboard ---
 window.addEventListener("keydown", (e) => {
@@ -364,6 +390,31 @@ fullPianoCb.addEventListener("change", () => {
   rebuild();
 });
 window.addEventListener("resize", applyKeySizing);
+// The keyboard's container also changes width when it moves between tabs.
+if (window.ResizeObserver) new ResizeObserver(applyKeySizing).observe(pianoEl.parentElement);
+
+// If the keyboard is wider than the screen, scroll it so a marked key is visible.
+function revealKey(el) {
+  const box = pianoEl.parentElement;
+  if (!el || box.scrollWidth <= box.clientWidth) return;
+  const k = el.getBoundingClientRect(), b = box.getBoundingClientRect();
+  if (k.left < b.left || k.right > b.right) {
+    box.scrollTo({ left: box.scrollLeft + k.left - b.left - (b.width - k.width) / 2, behavior: "smooth" });
+  }
+}
+
+// On small screens the secondary controls fold away behind a "More" button.
+const controlsEl = document.querySelector(".controls");
+const controlsToggle = document.getElementById("controlsToggle");
+function setControlsOpen(open) {
+  controlsEl.classList.toggle("open", open);
+  controlsToggle.setAttribute("aria-expanded", String(open));
+  controlsToggle.innerHTML = `⚙<span class="ct-label"> ${open ? "Less" : "More"}</span>`;
+  controlsToggle.setAttribute("aria-label", open ? "Fewer settings" : "More settings");
+  try { localStorage.setItem("webpiano.controlsOpen", open ? "1" : ""); } catch (_) { /* ignore */ }
+}
+controlsToggle.addEventListener("click", () => setControlsOpen(!controlsEl.classList.contains("open")));
+try { setControlsOpen(localStorage.getItem("webpiano.controlsOpen") === "1"); } catch (_) { setControlsOpen(false); }
 
 engineSel.addEventListener("change", async () => {
   try { localStorage.setItem(INSTRUMENT_KEY, engineSel.value); } catch (_) { /* ignore */ }
@@ -394,14 +445,18 @@ const PianoUI = {
   setTarget(midi) {
     for (const el of pianoEl.querySelectorAll(".key.target")) el.classList.remove("target");
     if (midi === null || !notes.length) return;
-    offsetToEl.get(Math.round(midi) - notes[0].midi)?.classList.add("target");
+    const el = offsetToEl.get(Math.round(midi) - notes[0].midi);
+    el?.classList.add("target");
+    revealKey(el);
   },
   // Mark the notes of an interval-quiz answer (empty array clears).
   markNotes(midis) {
     for (const el of pianoEl.querySelectorAll(".key.iv-mark")) el.classList.remove("iv-mark");
     if (!notes.length) return;
     for (const m of midis) offsetToEl.get(m - notes[0].midi)?.classList.add("iv-mark");
+    if (midis.length) revealKey(offsetToEl.get(midis[0] - notes[0].midi));
   },
+  resize: () => applyKeySizing(),
 };
 
 // ===========================================================================

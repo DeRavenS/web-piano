@@ -87,6 +87,7 @@
     tab = t;
     save(TAB_KEY, t);
     for (const b of tabButtons) b.setAttribute("aria-selected", String(b.dataset.tab === t));
+    document.body.dataset.tab = t; // lets the CSS size the keyboard per tab
     const singing = t === "free" || t === "exercises";
     trainerEl.hidden = !singing;
     IntervalTrainer.setActive(t === "intervals");
@@ -102,6 +103,8 @@
     ui.scoreBig.textContent = "—";
     ui.scoreDetail.textContent = " ";
     if (t === "exercises") buildPreview();
+    PianoUI.resize?.();
+    document.querySelector(`.tab[data-tab="${t}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
   for (const b of tabButtons) {
     b.addEventListener("click", async () => {

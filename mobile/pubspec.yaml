@@ -2,7 +2,7 @@ name: web_piano
 description: "Web Piano for Android — runs the bundled web app (piano, guitar and voice sounds, pitch trainer, vocal exercises, interval ear training) in a WebView."
 publish_to: 'none'
 
-version: 2.1.0+3
+version: 2.1.1+4
 
 environment:
   sdk: ^3.10.7
